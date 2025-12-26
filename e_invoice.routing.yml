@@ -1,0 +1,7 @@
+entity.invoice.settings:
+  path: 'admin/structure/invoice'
+  defaults:
+    _form: '\Drupal\e_invoice\Form\InvoiceSettingsForm'
+    _title: 'Invoice'
+  requirements:
+    _permission: 'administer invoice'

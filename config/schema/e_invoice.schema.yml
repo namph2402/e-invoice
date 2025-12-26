@@ -1,0 +1,31 @@
+e_invoice.settings:
+  type: config_object
+  label: 'E-Invoice settings'
+  mapping:
+    invoice_provider:
+      type: string
+      label: 'Invoice provider'
+    invoice_host:
+      type: string
+      label: 'Invoice host'
+    invoice_username:
+      type: string
+      label: 'Username'
+    invoice_password:
+      type: string
+      label: 'Password'
+    invoice_taxcode:
+      type: string
+      label: 'Tax code'
+    invoice_pattern:
+      type: string
+      label: 'Invoice pattern'
+    invoice_serial:
+      type: string
+      label: 'Invoice serial'
+    invoice_appid:
+      type: string
+      label: 'Invoice appid'
+    invoice_token:
+      type: string
+      label: 'Invoice token'

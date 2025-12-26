@@ -1,0 +1,24 @@
+entity.invoice.collection:
+  title: 'Invoices'
+  route_name: entity.invoice.collection
+  base_route: system.admin_content
+
+entity.invoice.settings:
+  title: 'Settings'
+  route_name: entity.invoice.settings
+  base_route: entity.invoice.settings
+
+entity.invoice.view:
+  title: 'View'
+  route_name: entity.invoice.canonical
+  base_route: entity.invoice.canonical
+
+entity.invoice.edit_form:
+  title: 'Edit'
+  route_name: entity.invoice.edit_form
+  base_route: entity.invoice.canonical
+
+entity.invoice.delete_form:
+  title: 'Delete'
+  route_name: entity.invoice.delete_form
+  base_route: entity.invoice.canonical

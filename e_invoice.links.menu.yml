@@ -1,0 +1,11 @@
+entity.invoice.collection:
+  title: 'Invoices'
+  description: 'List of invoices.'
+  route_name: entity.invoice.collection
+  parent: system.admin_content
+
+entity.invoice.settings:
+  title: 'Invoice'
+  description: 'Manage fields, form display, and view display for invoices.'
+  route_name: entity.invoice.settings
+  parent: system.admin_structure
