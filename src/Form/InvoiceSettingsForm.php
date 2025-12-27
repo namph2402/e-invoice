@@ -216,26 +216,14 @@ class InvoiceSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function getToken() {
-    $definitions = $this->providers->getDefinitions();
-    $provides = [];
-    foreach ($definitions as $definition) {
-      $provides[$definition['id']] = $definition['label'];
-    }
-    return $provides;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function ajaxRefresh(array &$form, FormStateInterface $form_state) {
+  protected function ajaxRefresh(array &$form, FormStateInterface $form_state) {
     return $form['invoice_templates'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function addRow(array &$form, FormStateInterface $form_state) {
+  protected function addRow(array &$form, FormStateInterface $form_state) {
     $templates = $form_state->get('invoice_templates') ?? [];
     $key = bin2hex(random_bytes(4));
     $templates[$key] = [
@@ -250,7 +238,7 @@ class InvoiceSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function removeRow(array &$form, FormStateInterface $form_state) {
+  protected function removeRow(array &$form, FormStateInterface $form_state) {
     $trigger = $form_state->getTriggeringElement();
     $templates = $form_state->get('invoice_templates') ?? [];
     unset($templates[str_replace('remove_', '', $trigger['#name'])]);

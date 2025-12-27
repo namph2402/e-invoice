@@ -227,7 +227,7 @@ class InvoiceFormWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public static function ajaxRefresh(array &$form, FormStateInterface $form_state) {
+  protected static function ajaxRefresh(array &$form, FormStateInterface $form_state) {
     $trigger = $form_state->getTriggeringElement();
     $parents = $trigger['#array_parents'];
     array_pop($parents);
@@ -239,14 +239,14 @@ class InvoiceFormWidget extends WidgetBase {
     if (end($parents) === 'container') {
       $parents[] = 'invoice_templates';
     }
-    
+
     return NestedArray::getValue($form, $parents);
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function addRow(array &$form, FormStateInterface $form_state) {
+  protected static function addRow(array &$form, FormStateInterface $form_state) {
     $trigger = $form_state->getTriggeringElement();
     $parents = $trigger['#parents'];
     array_pop($parents);
@@ -263,7 +263,7 @@ class InvoiceFormWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public static function removeRow(array &$form, FormStateInterface $form_state) {
+  protected static function removeRow(array &$form, FormStateInterface $form_state) {
     $trigger = $form_state->getTriggeringElement();
     $parents = $trigger['#parents'];
     $row_key = $parents[count($parents) - 2];

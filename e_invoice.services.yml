@@ -9,3 +9,7 @@ services:
   e_invoice.get_config:
     class: Drupal\e_invoice\Service\GetConfigInvoice
     arguments: ['@config.factory']
+
+  e_invoice.handle_invoice:
+    class: Drupal\e_invoice\Service\HandleInvoice
+    arguments: ['@plugin.manager.invoice_providers']

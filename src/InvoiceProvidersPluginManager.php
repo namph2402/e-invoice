@@ -16,7 +16,7 @@ class InvoiceProvidersPluginManager extends DefaultPluginManager {
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
     parent::__construct(
-      'Plugin/InvoiceProviders',
+      'Plugin/Providers',
       $namespaces,
       $module_handler,
       'Drupal\e_invoice\InvoiceProvidersInterface',

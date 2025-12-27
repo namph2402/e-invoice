@@ -52,7 +52,7 @@ use Drupal\user\EntityOwnerTrait;
  *   field_ui_base_route = "entity.invoice.settings",
  * )
  */
-final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
+final class Invoice extends ContentEntityBase implements InvoiceInterface {
 
   use EntityOwnerTrait;
 
@@ -81,12 +81,12 @@ final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
         'type' => 'string_textfield',
         'weight' => 0,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'string',
         'weight' => 0,
       ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['invoice_key'] = BaseFieldDefinition::create('string')
@@ -96,12 +96,12 @@ final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
         'type' => 'string_textfield',
         'weight' => 0,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'string',
         'weight' => 0,
       ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['invoice_transaction'] = BaseFieldDefinition::create('string')
@@ -111,72 +111,12 @@ final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
         'type' => 'string_textfield',
         'weight' => 0,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'string',
         'weight' => 0,
       ])
-      ->setDisplayConfigurable('view', TRUE);
-
-    $fields['invoice_template'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Invoice template'))
-      ->setSetting('max_length', 255)
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => 0,
-      ])
       ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('view', [
-        'label' => 'hidden',
-        'type' => 'string',
-        'weight' => 0,
-      ])
-      ->setDisplayConfigurable('view', TRUE);
-
-    $fields['invoice_series'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Invoice series'))
-      ->setSetting('max_length', 255)
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => 0,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('view', [
-        'label' => 'hidden',
-        'type' => 'string',
-        'weight' => 0,
-      ])
-      ->setDisplayConfigurable('view', TRUE);
-
-    $fields['invoice_no'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Invoice no'))
-      ->setSetting('max_length', 255)
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => 0,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('view', [
-        'label' => 'hidden',
-        'type' => 'string',
-        'weight' => 0,
-      ])
-      ->setDisplayConfigurable('view', TRUE);
-
-    $fields['invoice_serial'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Invoice serial'))
-      ->setSetting('max_length', 255)
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => 0,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('view', [
-        'label' => 'hidden',
-        'type' => 'string',
-        'weight' => 0,
-      ])
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['invoice_pattern'] = BaseFieldDefinition::create('string')
@@ -186,12 +126,42 @@ final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
         'type' => 'string_textfield',
         'weight' => 0,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'string',
         'weight' => 0,
       ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['invoice_serial'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Invoice serial'))
+      ->setSetting('max_length', 255)
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'string',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['invoice_no'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Invoice no'))
+      ->setSetting('max_length', 255)
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'string',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['invoice_status'] = BaseFieldDefinition::create('string')
@@ -201,12 +171,12 @@ final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
         'type' => 'string_textfield',
         'weight' => 0,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'string',
         'weight' => 0,
       ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['invoice_pdf'] = BaseFieldDefinition::create('file')
@@ -215,13 +185,13 @@ final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
       ->setSetting('file_directory', 'invoices/[date:custom:Y]/[date:custom:m]')
       ->setDisplayOptions('form', [
         'type' => 'file_generic',
-        'weight' => 10,
+        'weight' => 0,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
         'type' => 'file_default',
-        'weight' => 10,
+        'weight' => 0,
       ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['published'] = BaseFieldDefinition::create('boolean')
@@ -231,7 +201,6 @@ final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
         'type' => 'boolean_checkbox',
         'weight' => 0,
       ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
         'type' => 'boolean',
         'label' => 'above',
@@ -240,6 +209,7 @@ final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
           'format' => 'enabled-disabled',
         ],
       ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
@@ -247,7 +217,7 @@ final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'timestamp',
-        'weight' => 3,
+        'weight' => -1,
       ])
       ->setDisplayConfigurable('view', TRUE);
 
@@ -258,7 +228,7 @@ final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'author',
-        'weight' => 4,
+        'weight' => -1,
       ])
       ->setDisplayConfigurable('view', TRUE);
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\e_invoice\Plugin\InvoiceProviders;
+namespace Drupal\e_invoice\Plugin\Providers;
 
 use Drupal\Core\Plugin\PluginBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;

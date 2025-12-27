@@ -4,7 +4,7 @@ e_invoice.settings:
   mapping:
     invoice_provider:
       type: string
-      label: 'Invoice provider'
+      label: 'Provider'
     invoice_host:
       type: string
       label: 'Host url'
