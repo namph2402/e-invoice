@@ -3,7 +3,6 @@
 namespace Drupal\e_invoice\Service;
 
 use Drupal\e_invoice\InvoiceProvidersPluginManager;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Invoice get config invoice.
@@ -19,7 +18,7 @@ class HandleInvoice {
    * {@inheritdoc}
    */
   public function __construct(
-    InvoiceProvidersPluginManager $providers
+    InvoiceProvidersPluginManager $providers,
   ) {
     $this->providers = $providers;
   }
@@ -27,7 +26,7 @@ class HandleInvoice {
   /**
    * {@inheritdoc}
    */
-  protected function getProvider(array $config): object|null{
+  protected function getProvider(array $config): object|null {
     $provider_id = $config['invoice_provider'];
 
     if (empty($provider_id)) {
