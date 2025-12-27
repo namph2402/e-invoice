@@ -7,7 +7,7 @@ e_invoice.settings:
       label: 'Invoice provider'
     invoice_host:
       type: string
-      label: 'Invoice host'
+      label: 'Host url'
     invoice_username:
       type: string
       label: 'Username'
@@ -17,15 +17,22 @@ e_invoice.settings:
     invoice_taxcode:
       type: string
       label: 'Tax code'
-    invoice_pattern:
-      type: string
-      label: 'Invoice pattern'
-    invoice_serial:
-      type: string
-      label: 'Invoice serial'
     invoice_appid:
       type: string
-      label: 'Invoice appid'
+      label: 'App id'
     invoice_token:
       type: string
-      label: 'Invoice token'
+      label: 'Token'
+    invoice_templates:
+      type: sequence
+      label: 'Templates'
+      sequence:
+        type: mapping
+        label: 'Template'
+        mapping:
+          pattern:
+            type: string
+            label: 'Pattern'
+          serial:
+            type: string
+            label: 'Serial'

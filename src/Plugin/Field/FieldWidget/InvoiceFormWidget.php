@@ -6,8 +6,9 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\e_invoice\InvoiceProvidersPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\e_invoice\InvoiceProvidersPluginManager;
+use Drupal\Component\Utility\NestedArray;
 
 /**
  * {@inheritDoc}
@@ -77,14 +78,14 @@ class InvoiceFormWidget extends WidgetBase {
 
     $element['container']['invoice_provider'] = [
       '#type' => 'select',
-      '#title' => $this->t('Invoice provider'),
+      '#title' => $this->t('Provider'),
       '#options' => $this->providers(),
       '#default_value' => $value['invoice_provider'] ?? '',
     ];
 
     $element['container']['invoice_host'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Invoice host'),
+      '#title' => $this->t('Host url'),
       '#default_value' => $value['invoice_host'] ?? '',
     ];
 
@@ -106,31 +107,9 @@ class InvoiceFormWidget extends WidgetBase {
       '#default_value' => $value['invoice_taxcode'] ?? '',
     ];
 
-    $element['container']['invoice_pattern'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Invoice pattern'),
-      '#default_value' => $value['invoice_pattern'] ?? '',
-      '#states' => [
-        'visible' => [
-          ':input[name$="[invoice_provider]"]' => ['value' => 'megabiz'],
-        ],
-      ],
-    ];
-
-    $element['container']['invoice_serial'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Invoice serial'),
-      '#default_value' => $value['invoice_serial'] ?? '',
-      '#states' => [
-        'visible' => [
-          ':input[name$="[invoice_provider]"]' => ['value' => 'megabiz'],
-        ],
-      ],
-    ];
-
     $element['container']['invoice_appid'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Invoice appid'),
+      '#title' => $this->t('App id'),
       '#default_value' => $value['invoice_appid'] ?? '',
       '#states' => [
         'visible' => [
@@ -141,12 +120,69 @@ class InvoiceFormWidget extends WidgetBase {
 
     $element['container']['invoice_token'] = [
       '#type' => 'textarea',
-      '#title' => $this->t('Invoice token'),
+      '#title' => $this->t('Token'),
       '#default_value' => $value['invoice_token'] ?? '',
       '#states' => [
         'visible' => [
           ':input[name$="[invoice_provider]"]' => ['value' => 'misa'],
         ],
+      ],
+    ];
+
+    $templates = $value['invoice_templates'] ?? [];
+
+    $form_values = $form_state->getValues();
+    if (!empty($form_values)) {
+      $field_name = $items->getName();
+      $templates = $form_values[$field_name][$delta]['container']['invoice_templates'];
+    }
+
+    $element['container']['invoice_templates'] = [
+      '#type' => 'table',
+      '#tree' => TRUE,
+      '#header' => [
+        $this->t('Pattern'),
+        $this->t('Serial'),
+        $this->t('Operations'),
+      ],
+      '#prefix' => '<div id="invoice-templates-wrapper">',
+      '#suffix' => '</div>',
+    ];
+
+    foreach ($templates as $key => $row) {
+      $element['container']['invoice_templates'][$key]['pattern'] = [
+        '#type' => 'textfield',
+        '#default_value' => $row['pattern'] ?? '',
+        '#required' => TRUE,
+      ];
+
+      $element['container']['invoice_templates'][$key]['serial'] = [
+        '#type' => 'textfield',
+        '#default_value' => $row['serial'] ?? '',
+        '#required' => TRUE,
+      ];
+
+      $element['container']['invoice_templates'][$key]['remove'] = [
+        '#type' => 'submit',
+        '#name' => 'remove_' . $key,
+        '#value' => $this->t('Remove'),
+        '#limit_validation_errors' => [],
+        '#submit' => [[static::class, 'removeRow']],
+        '#ajax' => [
+          'callback' => [static::class, 'ajaxRefresh'],
+          'wrapper' => 'invoice-templates-wrapper',
+        ],
+      ];
+    }
+
+    $element['container']['add'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Add row'),
+      '#limit_validation_errors' => [],
+      '#submit' => [[static::class, 'addRow']],
+      '#ajax' => [
+        'callback' => [static::class, 'ajaxRefresh'],
+        'wrapper' => 'invoice-templates-wrapper',
       ],
     ];
 
@@ -158,6 +194,7 @@ class InvoiceFormWidget extends WidgetBase {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as &$value) {
+      $templates = empty($value['container']['invoice_templates']) ? [] : $value['container']['invoice_templates'];
       $value = [
         'value' => json_encode([
           'enable' => $value['container']['enable'],
@@ -166,10 +203,9 @@ class InvoiceFormWidget extends WidgetBase {
           'invoice_username' => $value['container']['invoice_username'],
           'invoice_password' => $value['container']['invoice_password'],
           'invoice_taxcode' => $value['container']['invoice_taxcode'],
-          'invoice_pattern' => $value['container']['invoice_pattern'],
-          'invoice_serial' => $value['container']['invoice_serial'],
           'invoice_appid' => $value['container']['invoice_appid'],
           'invoice_token' => $value['container']['invoice_token'],
+          'invoice_templates' => array_values($templates),
         ]),
       ];
     }
@@ -186,6 +222,62 @@ class InvoiceFormWidget extends WidgetBase {
       $provides[$definition['id']] = $definition['label'];
     }
     return $provides;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function ajaxRefresh(array &$form, FormStateInterface $form_state) {
+    $trigger = $form_state->getTriggeringElement();
+    $parents = $trigger['#array_parents'];
+    array_pop($parents);
+
+    if (!in_array(end($parents), ['container', 'invoice_templates'])) {
+      array_pop($parents);
+    }
+
+    if (end($parents) === 'container') {
+      $parents[] = 'invoice_templates';
+    }
+    
+    return NestedArray::getValue($form, $parents);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function addRow(array &$form, FormStateInterface $form_state) {
+    $trigger = $form_state->getTriggeringElement();
+    $parents = $trigger['#parents'];
+    array_pop($parents);
+    $parents[] = 'invoice_templates';
+
+    $templates = NestedArray::getValue($form_state->getUserInput(), $parents) ?? [];
+    $templates[bin2hex(random_bytes(4))] = ['pattern' => '', 'serial' => ''];
+
+    NestedArray::setValue($form_state->getUserInput(), $parents, $templates);
+    $form_state->setValue($parents, $templates);
+    $form_state->setRebuild();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function removeRow(array &$form, FormStateInterface $form_state) {
+    $trigger = $form_state->getTriggeringElement();
+    $parents = $trigger['#parents'];
+    $row_key = $parents[count($parents) - 2];
+    array_pop($parents);
+    array_pop($parents);
+
+    $user_input = $form_state->getUserInput();
+    $templates = NestedArray::getValue($user_input, $parents) ?? [];
+    unset($templates[$row_key]);
+
+    NestedArray::setValue($user_input, $parents, $templates);
+    $form_state->setUserInput($user_input);
+    $form_state->setValue($parents, $templates);
+    $form_state->setRebuild();
   }
 
 }

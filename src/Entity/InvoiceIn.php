@@ -52,7 +52,7 @@ use Drupal\user\EntityOwnerTrait;
  *   field_ui_base_route = "entity.invoice.settings",
  * )
  */
-final class Invoice extends ContentEntityBase implements InvoiceInterface {
+final class InvoiceIn extends ContentEntityBase implements InvoiceInterface {
 
   use EntityOwnerTrait;
 
@@ -224,15 +224,11 @@ final class Invoice extends ContentEntityBase implements InvoiceInterface {
       ])
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['public'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Public'))
+    $fields['published'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Published'))
       ->setDefaultValue(1)
-      ->setSetting('on_label', 'Enabled')
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
-        'settings' => [
-          'display_label' => FALSE,
-        ],
         'weight' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE)
