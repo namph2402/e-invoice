@@ -10,12 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * {@inheritdoc}
  */
-class InvoiceIssueForm extends FormBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected array $invoiceConfig = [];
+class HandleForm extends FormBase {
 
   /**
    * {@inheritDoc}
@@ -57,10 +52,9 @@ class InvoiceIssueForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, array $invoice_config = []) {
-    $this->invoiceConfig = $invoice_config;
-
+  public function buildForm(array $form, FormStateInterface $form_state) {
     $options = [];
+    $invoice_config = $form_state->get('invoice_config');
     foreach ($invoice_config['invoice_templates'] as $key => $template) {
       $options[$key] = $template['pattern'] . ' | ' . $template['serial'];
     }
@@ -85,22 +79,38 @@ class InvoiceIssueForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $template_key = $form_state->getValue('invoice_template');
-    $template = $this->invoiceConfig['invoice_templates'][$template_key];
+    $invoice_config = $form_state->get('invoice_config');
+    $invoice_data = $form_state->get('invoice_data');
+
+    $template_key = $form_state->getValue(key: 'invoice_template');
+    $template = $invoice_config['invoice_templates'][$template_key];
 
     $payload = [
-      'invoice_provider' => $this->invoiceConfig['invoice_provider'],
-      'invoice_host' => $this->invoiceConfig['invoice_host'],
-      'invoice_username' => $this->invoiceConfig['invoice_username'],
-      'invoice_password' => $this->invoiceConfig['invoice_password'],
-      'invoice_taxcode' => $this->invoiceConfig['invoice_taxcode'],
-      'invoice_appid' => $this->invoiceConfig['invoice_appid'],
-      'invoice_token' => $this->invoiceConfig['invoice_token'],
-      'invoice_emplate' => $template,
+      'invoice_provider' => $invoice_config['invoice_provider'],
+      'invoice_host' => $invoice_config['invoice_host'],
+      'invoice_username' => $invoice_config['invoice_username'],
+      'invoice_password' => $invoice_config['invoice_password'],
+      'invoice_taxcode' => $invoice_config['invoice_taxcode'],
+      'invoice_appid' => $invoice_config['invoice_appid'],
+      'invoice_token' => $invoice_config['invoice_token'],
+      'invoice_template' => $template,
     ];
 
-    // Gọi service issue
-    $this->handleInvoice->issueInvoice($payload);
+    // Gọi service issue.
+    if ($form_state->get('form_type') === 'issue') {
+      $this->handleInvoice->issueInvoice($payload, $invoice_data);
+    }
+    elseif ($form_state->get('form_type') === 'replace') {
+      $this->handleInvoice->replaceInvoice($payload, $invoice_data);
+    }
+    elseif ($form_state->get('form_type') === 'preview') {
+      $this->handleInvoice->previewInvoice($payload, $invoice_data);
+    }
+    else {
+      // Không biết loại form -> Lỗi.
+    }
+
+    // xử lý xong gọi form đi đâu ???
   }
 
 }

@@ -216,14 +216,14 @@ class InvoiceSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function ajaxRefresh(array &$form, FormStateInterface $form_state) {
+  public function ajaxRefresh(array &$form, FormStateInterface $form_state) {
     return $form['invoice_templates'];
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function addRow(array &$form, FormStateInterface $form_state) {
+  public function addRow(array &$form, FormStateInterface $form_state) {
     $templates = $form_state->get('invoice_templates') ?? [];
     $key = bin2hex(random_bytes(4));
     $templates[$key] = [
@@ -238,7 +238,7 @@ class InvoiceSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function removeRow(array &$form, FormStateInterface $form_state) {
+  public function removeRow(array &$form, FormStateInterface $form_state) {
     $trigger = $form_state->getTriggeringElement();
     $templates = $form_state->get('invoice_templates') ?? [];
     unset($templates[str_replace('remove_', '', $trigger['#name'])]);

@@ -43,10 +43,31 @@ class HandleInvoice {
   /**
    * {@inheritdoc}
    */
-  public function issueInvoice(array $config, array $data = []): array {
-    $provider = $this->getProvider($config);
+  public function issueInvoice(array $config, array $data = []): mixed {
+    if ($provider = $this->getProvider($config)) {
+      return $provider->issue($config, $data);
+    }
+    return NULL;
+  }
 
-    return [];
+  /**
+   * {@inheritdoc}
+   */
+  public function replaceInvoice(array $config, array $data = []): mixed {
+    if ($provider = $this->getProvider($config)) {
+      return $provider->replace($config, $data);
+    }
+    return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function previewInvoice(array $config, array $data = []): mixed {
+    if ($provider = $this->getProvider($config)) {
+      return $provider->preview($config, $data);
+    }
+    return NULL;
   }
 
 }

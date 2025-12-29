@@ -89,8 +89,30 @@ final class Invoice extends ContentEntityBase implements InvoiceInterface {
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
+    $fields['invoice_type'] = BaseFieldDefinition::create('list_string')
+      ->setLabel(t('Invoice type'))
+      ->setRequired(TRUE)
+      ->setSettings([
+        'allowed_values' => [
+          'invoice_in' => 'Hóa đơn đầu vào',
+          'invoice_out' => 'Hóa đơn đầu ra',
+        ],
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'options_select',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'list_default',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+
     $fields['invoice_key'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Invoice key'))
+      ->setRequired(TRUE)
       ->setSetting('max_length', 255)
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
