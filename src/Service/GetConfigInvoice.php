@@ -25,23 +25,26 @@ class GetConfigInvoice {
    * {@inheritdoc}
    */
   public function handle(array $data = []): array {
-    $config = $this->configFactory->get('e_invoice.settings');
+    $config = $this->configFactory->get("e_invoice.settings");
 
     $defaults = [
-      'invoice_provider' => $config->get('invoice_provider') ?? '',
-      'invoice_host' => $config->get('invoice_host') ?? '',
-      'invoice_username' => $config->get('invoice_username') ?? '',
-      'invoice_password' => $config->get('invoice_password') ?? '',
-      'invoice_taxcode' => $config->get('invoice_taxcode') ?? '',
-      'invoice_appid' => $config->get('invoice_appid') ?? '',
-      'invoice_subscribers' => $config->get('invoice_subscribers') ?? '',
-      'invoice_organization' => $config->get('invoice_organization') ?? '',
-      'invoice_token' => $config->get('invoice_token') ?? '',
-      'invoice_jwt_token' => $config->get('invoice_jwt_token') ?? '',
-      'invoice_templates' => $config->get('invoice_templates') ?? [],
+      "invoice_provider" => $config->get("invoice_provider") ?? "",
+      "invoice_host" => $config->get("invoice_host") ?? "",
+      "invoice_username" => $config->get("invoice_username") ?? "",
+      "invoice_password" => $config->get("invoice_password") ?? "",
+      "invoice_taxcode" => $config->get("invoice_taxcode") ?? "",
+      "invoice_appid" => $config->get("invoice_appid") ?? "",
+      "invoice_appurl" => $config->get("invoice_appurl") ?? "",
+      "invoice_client" => $config->get("invoice_client") ?? "",
+      "invoice_subscribers" => $config->get("invoice_subscribers") ?? "",
+      "invoice_organization" => $config->get("invoice_organization") ?? "",
+      "invoice_token" => $config->get("invoice_token") ?? "",
+      "invoice_jwt_token" => $config->get("invoice_jwt_token") ?? "",
+      "invoice_templates" => $config->get("invoice_templates") ?? [],
+      "invoice_expiration" => $config->get("invoice_expiration") ?? "",
     ];
 
-    if (empty($data) || empty($data['enable'])) {
+    if (empty($data) || empty($data["enable"])) {
       return $defaults;
     }
 

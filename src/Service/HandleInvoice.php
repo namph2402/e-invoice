@@ -46,7 +46,7 @@ class HandleInvoice {
       ];
     }
 
-    $organizationData = $subscribersID = '';
+    $organizationData = $subscribersID = "";
 
     $token = $provider->token($config);
     if (empty($token["success"]) || $token["HttpCode"] !== 200) {
@@ -91,8 +91,8 @@ class HandleInvoice {
 
     return [
       "success" => TRUE,
-      "token" => $token["data"] ?? '',
-      "jwtToken" => $jwt["Data"]["AccessToken"] ?? '',
+      "token" => $token["data"] ?? "",
+      "jwt_token" => $jwt["Data"]["AccessToken"] ?? "",
       "subscribers" => $subscribersID,
       "organization" => $organizationData,
     ];
@@ -124,6 +124,16 @@ class HandleInvoice {
   public function previewInvoice(array $config, array $data = []): mixed {
     if ($provider = $this->getProvider($config)) {
       return $provider->preview($config, $data);
+    }
+    return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function modifiedInvoice(array $config): mixed {
+    if ($provider = $this->getProvider($config)) {
+      return $provider->modified($config);
     }
     return NULL;
   }

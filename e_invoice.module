@@ -34,20 +34,20 @@ function e_invoice_entity_presave(EntityInterface $entity) {
     'invoice_client' => $entity->get('field_inv_client')->value,
   ];
 
-  if (empty($config["invoice_appid"]) || empty($config["invoice_client"])) {
+  if (empty($config['invoice_appid']) || empty($config['invoice_client'])) {
     return;
   }
 
-  $data_token = \Drupal::service("e_invoice.handle_invoice")->getToken($config);
+  $data_token = \Drupal::service('e_invoice.handle_invoice')->getToken($config);
 
-  if (empty($data_token["success"])) {
+  if (empty($data_token['success'])) {
     return;
   }
 
-  $translation->set('field_inv_token', $data_token["token"]);
-  $translation->set('field_inv_jwt_token', $data_token["jwt_token"]);
-  $translation->set('field_inv_subscribers', $data_token["subscribers"] ?? '');
-  $translation->set('field_inv_organization', $data_token["organization"]["Id"] ?? '');
+  $translation->set('field_inv_token', $data_token['token']);
+  $translation->set('field_inv_jwt_token', $data_token['jwt_token']);
+  $translation->set('field_inv_subscribers', $data_token['subscribers'] ?? '');
+  $translation->set('field_inv_organization', $data_token['organization']['Id'] ?? '');
   $translation->set('field_inv_expiration', $date->format('Y-m-d'));
   \Drupal::messenger()->addStatus(t('Get token successfully.'));
 

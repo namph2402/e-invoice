@@ -71,10 +71,11 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('uuid'),
-      $container->get('entity_type.manager'),
+      $container->get("uuid"),
+      $container->get("entity_type.manager"),
       $container->get("e_invoice.get_number_to_words"),
-      $container->get('file_system'),
+      $container->get("file_system"),
+      $container->get("http_client"),
     );
   }
 
@@ -88,10 +89,10 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
 
     $base = [
       "RefID" => $this->uuid->generate(),
-      "InvSeries" => "1C25TAA",
-      "InvoiceName" => "Hóa đơn giá trị gia tăng",
+      "InvSeries" => $template["serial"] ?? "",
+      "InvoiceName" => $data["invoice_title"] ?? "",
       "IsInvoiceCalculatingMachine" => TRUE,
-      "InvDate" => date('Y-m-d'),
+      "InvDate" => date("Y-m-d"),
       "CurrencyCode" => $data["invoice_currency_code"] ?? "VND",
       "ExchangeRate" => 1,
       "PaymentMethodName" => $data["invoice_payment"] ?? NULL,
@@ -115,17 +116,17 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
       "TotalAmount" => $invoice_amount,
       "TotalAmountInWords" => $invoice_amount_words,
       "IsTaxReduction43" => FALSE,
-      "OriginalInvoiceDetail" => $this->buildProducts($data['products']),
+      "OriginalInvoiceDetail" => $this->buildProducts($data["products"]),
       "TaxRateInfo" => [
           [
-            "VATRateName" => $data["invoice_vat"] . '%',
+            "VATRateName" => $data["invoice_vat"] . "%",
             "AmountWithoutVATOC" => $data["invoice_vat_amount"],
             "VATAmountOC" => $data["invoice_vat_amount"],
           ],
       ],
     ];
 
-    if ($type == 'replace') {
+    if ($type == "replace") {
       $base += $this->buildReplace($replace);
     }
 
@@ -180,26 +181,26 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
     $index = 1;
 
     foreach ($products as $p) {
-      $type = (int) ($p['type'] ?? 1);
+      $type = (int) ($p["type"] ?? 1);
 
       $result[] = [
-        'ItemType' => $type,
-        'LineNumber' => $index,
-        'SortOrder' => in_array($type, [1, 2], TRUE) ? $index : NULL,
-        'ItemCode' => $p['code'] ?? NULL,
-        'ItemName' => $p['name'] ?? NULL,
-        'UnitName' => $p['unit'] ?? NULL,
-        'Quantity' => (float) ($p['quantity'] ?? 0),
-        'UnitPrice' => (float) ($p['price'] ?? 0),
-        'DiscountRate' => (int) ($p['discount'] ?? 0),
-        'DiscountAmountOC' => (float) ($p['discount_amount'] ?? 0),
-        'DiscountAmount' => (float) ($p['discount_amount'] ?? 0),
-        'AmountOC' => (float) ($p['total'] ?? 0),
-        'Amount' => (float) ($p['total'] ?? 0),
-        'AmountWithoutVATOC' => (float) ($p['amount'] ?? 0),
-        'VATRateName' => isset($p['vat']) ? $p['vat'] . '%' : '0%',
-        'VATAmountOC' => (float) ($p['vat_amount'] ?? 0),
-        'VATAmount' => (float) ($p['vat_amount'] ?? 0),
+        "ItemType" => $type,
+        "LineNumber" => $index,
+        "SortOrder" => in_array($type, [1, 2], TRUE) ? $index : NULL,
+        "ItemCode" => $p["code"] ?? NULL,
+        "ItemName" => $p["name"] ?? NULL,
+        "UnitName" => $p["unit"] ?? NULL,
+        "Quantity" => (float) ($p["quantity"] ?? 0),
+        "UnitPrice" => (float) ($p["price"] ?? 0),
+        "DiscountRate" => (int) ($p["discount"] ?? 0),
+        "DiscountAmountOC" => (float) ($p["discount_amount"] ?? 0),
+        "DiscountAmount" => (float) ($p["discount_amount"] ?? 0),
+        "AmountOC" => (float) ($p["total"] ?? 0),
+        "Amount" => (float) ($p["total"] ?? 0),
+        "AmountWithoutVATOC" => (float) ($p["amount"] ?? 0),
+        "VATRateName" => isset($p["vat"]) ? $p["vat"] . "%" : "0%",
+        "VATAmountOC" => (float) ($p["vat_amount"] ?? 0),
+        "VATAmount" => (float) ($p["vat_amount"] ?? 0),
       ];
 
       $index++;
@@ -218,42 +219,43 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
       "OrgInvTemplateNo" => $replace["inv_template_no"] ?? NULL,
       "OrgInvSeries" => $replace["inv_template_series"] ?? NULL,
       "OrgInvNo" => $replace["inv_no"] ?? NULL,
-      "OrgInvDate" => date('Y-m-d'),
+      "OrgInvDate" => date("Y-m-d"),
     ];
   }
 
   /**
    * Tạo hóa đơn.
    */
-  private function nodeInvoice(string $code, array $data = [], $pdf = NULL, $type = 'add', $invoice_entity = NULL) {
-    $invoice_storage = $this->entityTypeManager->getStorage('invoice');
+  private function nodeInvoice(string $code, array $data = [], $pdf = NULL, $type = "invoice_out", $handle = "add", $invoice_entity = NULL) {
+    $invoice_storage = $this->entityTypeManager->getStorage("invoice");
 
     $attribute = [
-      'label' => $code,
-      'invoice_key' => $data['RefID'],
-      'invoice_transaction' => $data['TransactionID'],
-      'invoice_template' => $data['InvTemplateNo'],
-      'invoice_series' => $data['InvSeries'],
-      'invoice_no' => $data['InvNo'],
+      "label" => $code,
+      "invoice_key" => $data["RefID"],
+      "invoice_transaction" => $data["TransactionID"],
+      "invoice_pattern" => $data["InvTemplateNo"],
+      "invoice_serial" => $data["InvSeries"],
+      "invoice_no" => $data["InvNo"],
+      "invoice_type" => $type,
     ];
 
     if ($pdf) {
-      $attribute['invoice_pdf'] = [
-        'target_id' => $pdf->id(),
-        'display' => 1,
+      $attribute["invoice_pdf"] = [
+        "target_id" => $pdf->id(),
+        "display" => 1,
       ];
     }
 
-    if ($type == 'add') {
+    if ($handle === "add") {
       $invoice = $invoice_storage->create($attribute);
-      $invoice->save();
     }
     else {
+      $invoice = $invoice_entity;
       foreach ($attribute as $field => $value) {
-        $invoice_entity->set($field, $value);
+        $invoice->set($field, $value);
       }
-      $invoice_entity->save();
     }
+    $invoice->save();
 
     return TRUE;
   }
@@ -264,19 +266,19 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
   private function callApi(string $url, array $headers, array $payload = [], string $method = 'POST', int $timeout = 30): array {
     try {
       $options = [
-        'headers' => $headers,
-        'json' => $payload,
-        'timeout' => $timeout,
+        "headers" => $headers,
+        "json" => $payload,
+        "timeout" => $timeout,
       ];
       
       $response = $this->client->request($method, $url, $options);
       $data = json_decode($response->getBody()->getContents(), TRUE);
-      $data['HttpCode'] = $response->getStatusCode();
+      $data["HttpCode"] = $response->getStatusCode();
       return $data;
     }
     catch (\Throwable $e) {
       throw new \RuntimeException(
-        'API error: ' . $e->getMessage(),
+        "API error: " . $e->getMessage(),
         $e->getCode(),
         $e
       );
@@ -330,9 +332,8 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
     $endPoint = "/api2/auth/jwttoken";
     $secure = substr(
       $secureToken, 
-      strpos($secureToken, ';') + 1
+      strpos($secureToken, ";") + 1
     );
-
     return $this->callApi(
       $config["invoice_host"] . $endPoint,
       [
@@ -422,7 +423,8 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
 
     $query = http_build_query([
       "invoiceWithCode" => "true",
-      "downloadDataType" => 'pdf',
+      "invoiceCalcu" => "true",
+      "downloadDataType" => "pdf",
     ]);
 
     $response = $this->callApi(
@@ -472,16 +474,14 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
   /**
    * Phát hành hóa đơn.
    */
-  public function createInv(array $config, array $data): array {
+  public function issue(array $config, array $data): array {
     $endPoint = "/api/integration/invoice";
 
     if (empty($data["invoice_code"])) {
-      throw new \RuntimeException(
-        "Bad Request"
-      );
+      throw new \RuntimeException("Bad Request");
     }
 
-    $dataInv = $this->getData($data);
+    $dataInv = $this->getData($config["invoice_template"], $data);
 
     $response = $this->callApi(
       $config["invoice_host"] . $endPoint,
@@ -515,36 +515,34 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
     $endPoint = "/api/integration/invoice";
 
     if (empty($data["invoice_code"])) {
-      throw new \RuntimeException(
-        "Bad Request"
-      );
+      throw new \RuntimeException("Bad Request");
     }
 
-    $invoice_storage = $this->entityTypeManager->getStorage('invoice');
+    $invoice_storage = $this->entityTypeManager->getStorage("invoice");
     $invoice_id = $invoice_storage->getQuery()
-      ->condition('label', $data["invoice_code"])
+      ->condition("label", $data["invoice_code"])
       ->accessCheck(FALSE)
       ->execute();
 
     if (empty($invoice_id)) {
-      throw new \RuntimeException(
-        "Not found invoice"
-      );
+      throw new \RuntimeException("Not found invoice");
     }
 
     $invoices = $invoice_storage->loadMultiple($invoice_id);
     /** @var \Drupal\e_invoice\Entity\Invoice $invoice */
     $invoice = reset($invoices);
 
-    $series = $invoice->get("invoice_series")->value ? substr($invoice->get("invoice_series")->value, 1) : "";
+    $series = $invoice->get("invoice_serial")->value
+      ? substr($invoice->get("invoice_serial")->value, 1)
+      : "";
 
     $data_replace = [
-      "inv_template_no" => $invoice->get("invoice_template")->value ?? "1",
+      "inv_template_no" => $invoice->get("invoice_pattern")->value ?? "1",
       "inv_template_series" => $series,
       "inv_no" => $invoice->get("invoice_no")->value ?? "",
     ];
 
-    $dataInv = $this->getData($data, $data_replace, 'replace');
+    $dataInv = $this->getData($config["invoice_template"], $data, $data_replace, "replace");
 
     $response = $this->callApi(
       $config["invoice_host"] . $endPoint,
@@ -564,7 +562,7 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
       $arr_data = reset($data_json);
       if (empty($arr_data["ErrorCode"]) && empty($arr_data["DescriptionErrorCode"])) {
         $file = $this->pdfInv($config, $arr_data["TransactionID"]);
-        $this->nodeInvoice($data["invoice_code"], $arr_data, $file, 'update', $invoice);
+        $this->nodeInvoice($data["invoice_code"], $arr_data, $file, "invoice_out", "update", $invoice);
       }
     }
 

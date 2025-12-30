@@ -295,11 +295,4 @@ class InvoiceSettingsForm extends ConfigFormBase {
     $form_state->setRebuild(TRUE);
   }
 
-  protected function handleToken(array $config) {
-    $data_token = $this->handleInvoice->getToken($config);
-    if (empty($data_token["success"])) {
-      return [];
-    }
-  }
-
 }
