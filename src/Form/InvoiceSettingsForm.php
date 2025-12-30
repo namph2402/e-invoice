@@ -114,7 +114,7 @@ class InvoiceSettingsForm extends ConfigFormBase {
 
     $form['invoice_client'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Client'),
+      '#title' => $this->t('Client ID'),
       '#default_value' => $config->get('invoice_client') ?? '',
       '#states' => [
         'visible' => [
@@ -208,13 +208,15 @@ class InvoiceSettingsForm extends ConfigFormBase {
     $data = $form_state->getValues();
     $config = $this->configFactory()->getEditable('e_invoice.settings');
 
-    foreach ($data['invoice_templates'] as $row) {
-      if (!empty($row['name']) && !empty($row['pattern']) && !empty($row['serial'])) {
-        $templates[] = [
-          'name' => trim($row['name']),
-          'pattern' => trim($row['pattern']),
-          'serial' => trim($row['serial']),
-        ];
+    if (!empty($data['invoice_templates'])) {
+      foreach ($data['invoice_templates'] as $row) {
+        if (!empty($row['name']) && !empty($row['pattern']) && !empty($row['serial'])) {
+          $templates[] = [
+            'name' => trim($row['name']),
+            'pattern' => trim($row['pattern']),
+            'serial' => trim($row['serial']),
+          ];
+        }
       }
     }
 

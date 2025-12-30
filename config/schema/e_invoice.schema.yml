@@ -25,7 +25,7 @@ e_invoice.settings:
       label: 'App URL'
     invoice_client:
       type: string
-      label: 'Client'
+      label: 'Client ID'
     invoice_token:
       type: string
       label: 'Token'
