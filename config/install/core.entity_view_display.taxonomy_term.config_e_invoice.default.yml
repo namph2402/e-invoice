@@ -9,8 +9,7 @@ dependencies:
     - field.field.taxonomy_term.config_e_invoice.field_inv_organization
     - field.field.taxonomy_term.config_e_invoice.field_inv_password
     - field.field.taxonomy_term.config_e_invoice.field_inv_provider
-    - field.field.taxonomy_term.config_e_invoice.field_inv_secure_token
-    - field.field.taxonomy_term.config_e_invoice.field_inv_subscribers_id
+    - field.field.taxonomy_term.config_e_invoice.field_inv_subscribers
     - field.field.taxonomy_term.config_e_invoice.field_inv_tax_code
     - field.field.taxonomy_term.config_e_invoice.field_inv_templates
     - field.field.taxonomy_term.config_e_invoice.field_inv_token
@@ -61,7 +60,7 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 6
+    weight: 7
     region: content
   field_inv_password:
     type: string
@@ -78,13 +77,13 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
-  field_inv_subscribers_id:
+  field_inv_subscribers:
     type: string
     label: above
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 7
+    weight: 6
     region: content
   field_inv_tax_code:
     type: string
@@ -142,13 +141,6 @@ content:
     third_party_settings: {  }
     weight: 8
     region: content
-  field_inv_token:
-    type: basic_string
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 13
-    region: content
   field_inv_username:
     type: string
     label: above
@@ -160,4 +152,4 @@ content:
 hidden:
   description: true
   field_inv_jwt_token: true
-  field_inv_secure_token: true
+  field_inv_token: true

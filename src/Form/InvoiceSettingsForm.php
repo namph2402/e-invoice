@@ -6,6 +6,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\e_invoice\InvoiceProvidersPluginManager;
+use Drupal\e_invoice\Service\HandleInvoice;
 
 /**
  * {@inheritdoc}
@@ -17,6 +18,7 @@ class InvoiceSettingsForm extends ConfigFormBase {
    */
   public function __construct(
     protected InvoiceProvidersPluginManager $providers,
+    protected HandleInvoice $handleInvoice,
   ) {
   }
 
@@ -26,6 +28,7 @@ class InvoiceSettingsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('plugin.manager.invoice_providers'),
+      $container->get('e_invoice.handle_invoice'),
     );
   }
 
@@ -49,7 +52,6 @@ class InvoiceSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $form = parent::buildForm($form, $form_state);
     $config = $this->config('e_invoice.settings');
-    $required_password = empty($config->get('invoice_password')) ? TRUE : FALSE;
 
     $form['invoice_provider'] = [
       '#type' => 'select',
@@ -61,7 +63,7 @@ class InvoiceSettingsForm extends ConfigFormBase {
 
     $form['invoice_host'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Host url'),
+      '#title' => $this->t('Host'),
       '#default_value' => $config->get('invoice_host') ?? '',
       '#required' => TRUE,
     ];
@@ -74,10 +76,10 @@ class InvoiceSettingsForm extends ConfigFormBase {
     ];
 
     $form['invoice_password'] = [
-      '#type' => 'password',
+      '#type' => 'textfield',
       '#title' => $this->t('Password'),
       '#default_value' => $config->get('invoice_password') ?? '',
-      '#required' => $required_password,
+      '#required' => TRUE,
     ];
 
     $form['invoice_taxcode'] = [
@@ -89,7 +91,7 @@ class InvoiceSettingsForm extends ConfigFormBase {
 
     $form['invoice_appid'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('App id'),
+      '#title' => $this->t('App ID'),
       '#default_value' => $config->get('invoice_appid') ?? '',
       '#states' => [
         'visible' => [
@@ -98,10 +100,21 @@ class InvoiceSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['invoice_token'] = [
-      '#type' => 'textarea',
-      '#title' => $this->t('Token'),
-      '#default_value' => $config->get('invoice_token') ?? '',
+    $form['invoice_subscribers'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Subscribers ID'),
+      '#default_value' => $config->get('invoice_subscribers') ?? '',
+      '#states' => [
+        'visible' => [
+          ':input[name="invoice_provider"]' => ['value' => 'misa'],
+        ],
+      ],
+    ];
+
+    $form['invoice_organization'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Organization'),
+      '#default_value' => $config->get('invoice_organization') ?? '',
       '#states' => [
         'visible' => [
           ':input[name="invoice_provider"]' => ['value' => 'misa'],
@@ -172,7 +185,7 @@ class InvoiceSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $templates = [];
+    $templates = $data_token = [];
     $data = $form_state->getValues();
     $config = $this->configFactory()->getEditable('e_invoice.settings');
 
@@ -185,16 +198,24 @@ class InvoiceSettingsForm extends ConfigFormBase {
       }
     }
 
+    if (!empty($data["invoice_appid"])) {
+      $data_token = $this->handleInvoice->getToken($data);
+    }
+
     $config->set("invoice_provider", $data["invoice_provider"])
       ->set("invoice_host", $data["invoice_host"])
       ->set("invoice_username", $data["invoice_username"])
+      ->set("invoice_password", $data["invoice_password"])
       ->set("invoice_taxcode", $data["invoice_taxcode"])
       ->set("invoice_appid", $data["invoice_appid"])
-      ->set("invoice_token", $data["invoice_token"])
+      ->set("invoice_subscribers", $data["invoice_subscribers"])
+      ->set("invoice_organization", $data["invoice_organization"])
       ->set('invoice_templates', $templates);
 
-    if (!empty($data["invoice_password"])) {
-      $config->set("invoice_password", $data["invoice_password"]);
+    if (!empty($data_token["success"])) {
+      \Drupal::messenger()->addStatus($this->t('Get token successfully.'));
+      $config->set("invoice_token", $data_token["token"]);
+      $config->set("invoice_jwtToken", $data_token["jwtToken"]);
     }
 
     $config->save();
@@ -245,6 +266,13 @@ class InvoiceSettingsForm extends ConfigFormBase {
 
     $form_state->set('invoice_templates', $templates);
     $form_state->setRebuild(TRUE);
+  }
+
+  protected function handleToken(array $config) {
+    $data_token = $this->handleInvoice->getToken($config);
+    if (empty($data_token["success"])) {
+      return [];
+    }
   }
 
 }

@@ -1,0 +1,51 @@
+<?php
+
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\taxonomy\TermInterface;
+
+/**
+ * Implements e_invoice_entity_presave().
+ */
+function e_invoice_entity_presave(EntityInterface $entity) {
+
+  if ($entity->getEntityTypeId() !== 'taxonomy_term' || $entity->bundle() !== 'config_e_invoice') {
+    return;
+  }
+
+  $date = new DrupalDateTime('now');
+  $date->modify('+7 days');
+  $expiration = $date->format('Y-m-d');
+
+  $langcode = $entity->language()->getId();
+
+  /** @var TermInterface $entity */
+  $translation = $entity->hasTranslation($langcode)
+    ? $entity->getTranslation($langcode)
+    : $entity;
+
+  $config = [
+    'invoice_provider' => $entity->get('field_inv_provider')->value,
+    'invoice_host' => $entity->get('field_inv_host')->uri,
+    'invoice_username' => $entity->get('field_inv_username')->value,
+    'invoice_password' => $entity->get('field_inv_password')->value,
+    'invoice_taxcode' => $entity->get('field_inv_tax_code')->value,
+    'invoice_appid' => $entity->get('field_inv_app_id')->value,
+  ];
+
+  if (empty($config["invoice_appid"])) {
+    return;
+  }
+
+  $data_token = \Drupal::service("e_invoice.handle_invoice")->getToken($config);
+
+  if (empty($data_token["success"])) {
+    return;
+  }
+
+  $translation->set('field_inv_token', $data_token["token"]);
+  $translation->set('field_inv_jwt_token', $data_token["jwtToken"]);
+  $translation->set('field_inv_expiration', $expiration);
+  \Drupal::messenger()->addStatus(t('Get token successfully.'));
+
+}

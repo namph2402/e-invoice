@@ -3,8 +3,8 @@ status: true
 dependencies:
   module:
     - taxonomy
-id: taxonomy_term.field_inv_secure_token
-field_name: field_inv_secure_token
+id: taxonomy_term.field_inv_subscribers
+field_name: field_inv_subscribers
 entity_type: taxonomy_term
 type: string
 settings:

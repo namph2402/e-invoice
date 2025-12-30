@@ -7,7 +7,7 @@ e_invoice.settings:
       label: 'Provider'
     invoice_host:
       type: string
-      label: 'Host url'
+      label: 'Host'
     invoice_username:
       type: string
       label: 'Username'
@@ -19,10 +19,19 @@ e_invoice.settings:
       label: 'Tax code'
     invoice_appid:
       type: string
-      label: 'App id'
+      label: 'App ID'
+    invoice_subscribers:
+      type: string
+      label: 'Subscribers ID'
+    invoice_organization:
+      type: string
+      label: 'Organization'
     invoice_token:
       type: string
       label: 'Token'
+    invoice_jwt_token:
+      type: string
+      label: 'JWT Token'
     invoice_templates:
       type: sequence
       label: 'Templates'

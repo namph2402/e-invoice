@@ -311,13 +311,13 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
   /**
    * Lấy token.
    */
-  public function getToken(array $config) {
+  public function token(array $config): array {
     $endPoint = "/api/integration/auth/token";
 
     return $this->callApi(
       $config["invoice_host"] . $endPoint,
       [
-        "Content-Type: application/json",
+        "Content-Type" => "application/json",
       ],
       [
         "appid" => $config["invoice_appid"],
@@ -325,6 +325,49 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
         "username" => $config["invoice_username"],
         "password" => $config["invoice_password"],
       ]
+    );
+  }
+
+  /**
+   * Lấy secure token.
+   */
+  public function secureToken(array $config): array {
+    $endPoint = "/api2/validateuser";
+
+    return $this->callApi(
+      $config["invoice_host"] . $endPoint,
+      [
+        "Content-Type" => "application/json",
+        "appid" => $config["invoice_appid"],
+        "companytaxcode" => $config["invoice_taxcode"],
+        "username" => $config["invoice_username"],
+      ],
+      [
+        "password" => $config["invoice_password"],
+      ]
+    );
+  }
+
+  /**
+   * Lấy jwt token.
+   */
+  public function jwtToken(array $config, string $secureToken): array {
+    $endPoint = "/api2/auth/jwttoken";
+    $secure = substr(
+      $secureToken, 
+      strpos($secureToken, ';') + 1
+    );
+
+    return $this->callApi(
+      $config["invoice_host"] . $endPoint,
+      [
+        "Content-Type" => "application/json",
+        "appid" => $config["invoice_appid"],
+        "companytaxcode" => $config["invoice_taxcode"],
+        "username" => $config["invoice_username"],
+        "securetoken" => $secure,
+      ],
+      []
     );
   }
 
