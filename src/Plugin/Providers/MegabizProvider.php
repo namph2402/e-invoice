@@ -513,4 +513,22 @@ class MegabizProvider extends PluginBase implements InvoiceProvidersInterface, C
     );
   }
 
+  /**
+   *
+   */
+  public function preview(array $config, array $data): array {
+  }
+
+  /**
+   *
+   */
+  public function issue(array $config, array $data): array {
+  }
+
+  /**
+   *
+   */
+  public function replace(array $config, array $data): array {
+  }
+
 }

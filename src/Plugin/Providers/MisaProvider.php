@@ -261,51 +261,26 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
   /**
    * {@inheritDoc}
    */
-  private function callApi(string $url, array $headers, array $payload = [], string $method = "POST"): array {
-    $curl = curl_init();
-
-    $option = [
-      CURLOPT_URL => $url,
-      CURLOPT_RETURNTRANSFER => TRUE,
-      CURLOPT_CUSTOMREQUEST => strtoupper($method),
-      CURLOPT_HTTPHEADER => $headers,
-      CURLOPT_TIMEOUT => 30,
-      CURLOPT_CONNECTTIMEOUT => 10,
-    ];
-
-    if (!empty($payload)) {
-      $option[CURLOPT_POSTFIELDS] = json_encode(
-        $payload,
-        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+  private function callApi(string $url, array $headers, array $payload = [], string $method = 'POST', int $timeout = 30): array {
+    try {
+      $options = [
+        'headers' => $headers,
+        'json' => $payload,
+        'timeout' => $timeout,
+      ];
+      
+      $response = $this->client->request($method, $url, $options);
+      $data = json_decode($response->getBody()->getContents(), TRUE);
+      $data['HttpCode'] = $response->getStatusCode();
+      return $data;
+    }
+    catch (\Throwable $e) {
+      throw new \RuntimeException(
+        'API error: ' . $e->getMessage(),
+        $e->getCode(),
+        $e
       );
     }
-
-    curl_setopt_array($curl, $option);
-
-    $response = curl_exec($curl);
-
-    if ($response === FALSE) {
-      $error = curl_error($curl);
-      curl_close($curl);
-      throw new \RuntimeException("cURL error: " . $error);
-    }
-
-    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    curl_close($curl);
-
-    if ($httpCode >= 400) {
-      throw new \RuntimeException("HTTP error {$httpCode}: {$response}");
-    }
-
-    $decoded = json_decode($response, TRUE);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-      throw new \RuntimeException("Invalid JSON response");
-    }
-
-    return [
-      "http_code" => $httpCode,
-      "data" => $decoded,
-    ];
   }
 
   /**
@@ -372,22 +347,35 @@ class MisaProvider extends PluginBase implements InvoiceProvidersInterface, Cont
   }
 
   /**
-   * Làm mới token.
+   * Lấy subscribers.
    */
-  public function refreshToken(array $config) {
-    $endPoint = "/api/integration/auth/refresh";
-
+  public function subscribers(array $config): array {
+    $endPoint = "/inbot/api/subscribers/code/";
     return $this->callApi(
-      $config["invoice_host"] . $endPoint,
+      $config["invoice_appurl"] . $endPoint . $config["invoice_taxcode"],
       [
-        "Content-Type: application/json",
+        "Content-Type" => "application/json",
+        "ClientId" => $config["invoice_client"],
       ],
+      [],
+      "GET"
+    );
+  }
+
+  /**
+   * Lấy organization.
+   */
+  public function organization(array $config, array $jwt, string $subscribers): array {
+    $endPoint = "/inbot/api/{$subscribers}/organizations";
+    return $this->callApi(
+      $config["invoice_appurl"] . $endPoint,
       [
-        "appid" => $config["invoice_appid"],
-        "taxcode" => $config["invoice_taxcode"],
-        "username" => $config["invoice_username"],
-        "password" => $config["invoice_password"],
-      ]
+        "Content-Type" => "application/json",
+        "ClientId" => $config["invoice_client"],
+        "Authorization" => "Bearer {$jwt["AccessToken"]}",
+      ],
+      [],
+      "GET"
     );
   }
 

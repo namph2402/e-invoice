@@ -3,8 +3,8 @@ status: true
 dependencies:
   module:
     - taxonomy
-id: taxonomy_term.field_inv_app_id
-field_name: field_inv_app_id
+id: taxonomy_term.field_inv_appid
+field_name: field_inv_appid
 entity_type: taxonomy_term
 type: string
 settings:

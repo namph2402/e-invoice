@@ -2,13 +2,13 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.taxonomy_term.field_inv_app_id
+    - field.storage.taxonomy_term.field_inv_client
     - taxonomy.vocabulary.config_e_invoice
-id: taxonomy_term.config_e_invoice.field_inv_app_id
-field_name: field_inv_app_id
+id: taxonomy_term.config_e_invoice.field_inv_client
+field_name: field_inv_client
 entity_type: taxonomy_term
 bundle: config_e_invoice
-label: 'App ID'
+label: Client
 description: ''
 required: false
 translatable: false

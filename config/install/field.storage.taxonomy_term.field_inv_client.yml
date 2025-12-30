@@ -1,11 +1,10 @@
-uuid: 6b966d79-c9f7-4aed-be90-63dc344135c3
 langcode: en
 status: true
 dependencies:
   module:
     - taxonomy
-id: taxonomy_term.field_inv_tax_code
-field_name: field_inv_tax_code
+id: taxonomy_term.field_inv_client
+field_name: field_inv_client
 entity_type: taxonomy_term
 type: string
 settings:

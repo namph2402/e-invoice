@@ -40,28 +40,61 @@ class HandleInvoice {
    * Lấy token.
    */
   public function getToken(array $config): array {
-    if ($provider = $this->getProvider($config)) {
-      $token = $provider->token($config);
-      $secure = $provider->secureToken($config);
-      $jwt = $provider->jwtToken($config, $secure["Data"]);
-
-      if (empty($jwt["Success"]) || $jwt["HttpCode"] != 200) {
-        return [
-          "success" => FALSE,
-          "message" => "Lấy token không thành công",
-        ];
-      }
-
+    if (!$provider = $this->getProvider($config)) {
       return [
-        "success" => TRUE,
-        "token" => $token["data"],
-        "jwtToken" => $jwt["Data"]["AccessToken"],
+        "success" => FALSE
       ];
     }
 
+    $organizationData = $subscribersID = '';
+
+    $token = $provider->token($config);
+    if (empty($token["success"]) || $token["HttpCode"] !== 200) {
+      return [
+        "success" => FALSE
+      ];
+    }
+
+    $secure = $provider->secureToken($config);
+    if (empty($secure["Success"]) || $secure["HttpCode"] != 200) {
+      return [
+        "success" => FALSE
+      ];
+    }
+
+    $jwt = $provider->jwtToken($config, $secure["Data"]);
+    if (empty($jwt["Success"]) || $jwt["HttpCode"] != 200) {
+      return [
+        "success" => FALSE
+      ];
+    }
+
+    if (!empty($config["invoice_appurl"])) {
+      $subscribers = $provider->subscribers($config);
+      if (empty($subscribers["Success"]) || $subscribers["HttpCode"] != 200) {
+        return [
+          "success" => FALSE
+        ];
+      }
+
+      $subscribersID = $subscribers["Data"]["Id"];
+
+      $organization = $provider->organization($config, $jwt["Data"], $subscribersID);
+      if (empty($organization["Success"]) || $organization["HttpCode"] != 200) {
+        return [
+          "success" => FALSE
+        ];
+      }
+
+      $organizationData = reset($organization["Data"]);
+    }
+
     return [
-      "success" => FALSE,
-      "message" => "Nhà cung cấp không hợp lệ",
+      "success" => TRUE,
+      "token" => $token["data"] ?? '',
+      "jwtToken" => $jwt["Data"]["AccessToken"] ?? '',
+      "subscribers" => $subscribersID,
+      "organization" => $organizationData,
     ];
   }
 

@@ -20,18 +20,27 @@ e_invoice.settings:
     invoice_appid:
       type: string
       label: 'App ID'
-    invoice_subscribers:
+    invoice_appurl:
       type: string
-      label: 'Subscribers ID'
-    invoice_organization:
+      label: 'App URL'
+    invoice_client:
       type: string
-      label: 'Organization'
+      label: 'Client'
     invoice_token:
       type: string
       label: 'Token'
     invoice_jwt_token:
       type: string
       label: 'JWT Token'
+    invoice_subscribers:
+      type: string
+      label: 'Subscribers'
+    invoice_organization:
+      type: string
+      label: 'Organization'
+    invoice_expiration:
+      type: date
+      label: 'Expiration'
     invoice_templates:
       type: sequence
       label: 'Templates'

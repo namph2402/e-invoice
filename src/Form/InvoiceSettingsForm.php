@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\e_invoice\InvoiceProvidersPluginManager;
 use Drupal\e_invoice\Service\HandleInvoice;
+use Drupal\Core\Datetime\DrupalDateTime;
 
 /**
  * {@inheritdoc}
@@ -100,10 +101,10 @@ class InvoiceSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['invoice_subscribers'] = [
+    $form['invoice_appurl'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Subscribers ID'),
-      '#default_value' => $config->get('invoice_subscribers') ?? '',
+      '#title' => $this->t('App URL'),
+      '#default_value' => $config->get('invoice_appurl') ?? '',
       '#states' => [
         'visible' => [
           ':input[name="invoice_provider"]' => ['value' => 'misa'],
@@ -111,10 +112,10 @@ class InvoiceSettingsForm extends ConfigFormBase {
       ],
     ];
 
-    $form['invoice_organization'] = [
+    $form['invoice_client'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Organization'),
-      '#default_value' => $config->get('invoice_organization') ?? '',
+      '#title' => $this->t('Client'),
+      '#default_value' => $config->get('invoice_client') ?? '',
       '#states' => [
         'visible' => [
           ':input[name="invoice_provider"]' => ['value' => 'misa'],
@@ -133,6 +134,7 @@ class InvoiceSettingsForm extends ConfigFormBase {
       '#tree' => TRUE,
       '#title' => $this->t('Templates'),
       '#header' => [
+        $this->t('Name'),
         $this->t('Pattern'),
         $this->t('Serial'),
         $this->t('Operations'),
@@ -142,6 +144,12 @@ class InvoiceSettingsForm extends ConfigFormBase {
     ];
 
     foreach ($templates as $key => $row) {
+      $form['invoice_templates'][$key]['name'] = [
+        '#type' => 'textfield',
+        '#default_value' => $row['name'] ?? '',
+        '#required' => TRUE,
+      ];
+
       $form['invoice_templates'][$key]['pattern'] = [
         '#type' => 'textfield',
         '#default_value' => $row['pattern'] ?? '',
@@ -178,6 +186,17 @@ class InvoiceSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $form['invoice_expiration'] = [
+      '#type' => 'date',
+      '#title' => $this->t('Expiration'),
+      '#default_value' => $config->get('invoice_expiration'),
+      '#states' => [
+        'visible' => [
+          ':input[name="invoice_provider"]' => ['value' => 'misa'],
+        ],
+      ],
+    ];
+
     return $form;
   }
 
@@ -190,15 +209,16 @@ class InvoiceSettingsForm extends ConfigFormBase {
     $config = $this->configFactory()->getEditable('e_invoice.settings');
 
     foreach ($data['invoice_templates'] as $row) {
-      if (!empty($row['pattern']) && !empty($row['serial'])) {
+      if (!empty($row['name']) && !empty($row['pattern']) && !empty($row['serial'])) {
         $templates[] = [
+          'name' => trim($row['name']),
           'pattern' => trim($row['pattern']),
           'serial' => trim($row['serial']),
         ];
       }
     }
 
-    if (!empty($data["invoice_appid"])) {
+    if (!empty($data["invoice_appid"]) && !empty($data["invoice_client"])) {
       $data_token = $this->handleInvoice->getToken($data);
     }
 
@@ -208,14 +228,20 @@ class InvoiceSettingsForm extends ConfigFormBase {
       ->set("invoice_password", $data["invoice_password"])
       ->set("invoice_taxcode", $data["invoice_taxcode"])
       ->set("invoice_appid", $data["invoice_appid"])
-      ->set("invoice_subscribers", $data["invoice_subscribers"])
-      ->set("invoice_organization", $data["invoice_organization"])
+      ->set("invoice_appurl", $data["invoice_appurl"])
+      ->set("invoice_client", $data["invoice_client"])
       ->set('invoice_templates', $templates);
 
     if (!empty($data_token["success"])) {
-      \Drupal::messenger()->addStatus($this->t('Get token successfully.'));
+      $date = new DrupalDateTime('now');
+      $date->modify('+7 days');
+
       $config->set("invoice_token", $data_token["token"]);
-      $config->set("invoice_jwtToken", $data_token["jwtToken"]);
+      $config->set("invoice_jwt_token", $data_token["jwt_token"]);
+      $config->set("invoice_subscribers", $data_token["subscribers"] ?? '');
+      $config->set("invoice_organization", $data_token["organization"]["Id"] ?? '');
+      $config->set("invoice_expiration", $date->format('Y-m-d'));
+      \Drupal::messenger()->addStatus($this->t('Get token successfully.'));
     }
 
     $config->save();
@@ -248,6 +274,7 @@ class InvoiceSettingsForm extends ConfigFormBase {
     $templates = $form_state->get('invoice_templates') ?? [];
     $key = bin2hex(random_bytes(4));
     $templates[$key] = [
+      'name' => '',
       'pattern' => '',
       'serial' => '',
     ];

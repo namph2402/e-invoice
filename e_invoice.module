@@ -15,7 +15,6 @@ function e_invoice_entity_presave(EntityInterface $entity) {
 
   $date = new DrupalDateTime('now');
   $date->modify('+7 days');
-  $expiration = $date->format('Y-m-d');
 
   $langcode = $entity->language()->getId();
 
@@ -29,11 +28,13 @@ function e_invoice_entity_presave(EntityInterface $entity) {
     'invoice_host' => $entity->get('field_inv_host')->uri,
     'invoice_username' => $entity->get('field_inv_username')->value,
     'invoice_password' => $entity->get('field_inv_password')->value,
-    'invoice_taxcode' => $entity->get('field_inv_tax_code')->value,
-    'invoice_appid' => $entity->get('field_inv_app_id')->value,
+    'invoice_taxcode' => $entity->get('field_inv_taxcode')->value,
+    'invoice_appid' => $entity->get('field_inv_appid')->value,
+    'invoice_appurl' => $entity->get('field_inv_appurl')->uri,
+    'invoice_client' => $entity->get('field_inv_client')->value,
   ];
 
-  if (empty($config["invoice_appid"])) {
+  if (empty($config["invoice_appid"]) || empty($config["invoice_client"])) {
     return;
   }
 
@@ -44,8 +45,10 @@ function e_invoice_entity_presave(EntityInterface $entity) {
   }
 
   $translation->set('field_inv_token', $data_token["token"]);
-  $translation->set('field_inv_jwt_token', $data_token["jwtToken"]);
-  $translation->set('field_inv_expiration', $expiration);
+  $translation->set('field_inv_jwt_token', $data_token["jwt_token"]);
+  $translation->set('field_inv_subscribers', $data_token["subscribers"] ?? '');
+  $translation->set('field_inv_organization', $data_token["organization"]["Id"] ?? '');
+  $translation->set('field_inv_expiration', $date->format('Y-m-d'));
   \Drupal::messenger()->addStatus(t('Get token successfully.'));
 
 }

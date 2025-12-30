@@ -2,15 +2,15 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.taxonomy_term.field_inv_tax_code
+    - field.storage.taxonomy_term.field_inv_appid
     - taxonomy.vocabulary.config_e_invoice
-id: taxonomy_term.config_e_invoice.field_inv_tax_code
-field_name: field_inv_tax_code
+id: taxonomy_term.config_e_invoice.field_inv_appid
+field_name: field_inv_appid
 entity_type: taxonomy_term
 bundle: config_e_invoice
-label: 'Tax code'
+label: 'App ID'
 description: ''
-required: true
+required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''
